@@ -1,0 +1,87 @@
+.footer {
+  background: var(--navy);
+  color: rgba(255,255,255,0.7);
+  margin-top: 80px;
+}
+.grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1.5fr;
+  gap: 48px;
+  padding: 64px 24px 48px;
+}
+@media (max-width: 900px) {
+  .grid { grid-template-columns: 1fr 1fr; gap: 32px; }
+}
+@media (max-width: 480px) {
+  .grid { grid-template-columns: 1fr; gap: 24px; }
+}
+
+.logo {
+  display: flex; align-items: center; gap: 10px;
+  font-family: var(--font-display); font-size: 22px; font-weight: 800;
+  color: var(--white); margin-bottom: 16px;
+}
+.logoBox {
+  width: 34px; height: 34px;
+  background: var(--primary); color: #fff;
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; font-weight: 900;
+}
+.tagline { font-size: 13px; line-height: 1.7; margin-bottom: 20px; }
+
+.socials { display: flex; gap: 10px; }
+.socials a {
+  width: 36px; height: 36px;
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: var(--radius);
+  display: flex; align-items: center; justify-content: center;
+  color: rgba(255,255,255,0.6);
+  transition: all var(--duration) var(--ease);
+}
+.socials a:hover { border-color: var(--primary); color: var(--primary); }
+
+.heading {
+  font-family: var(--font-display);
+  font-size: 13px; font-weight: 700; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--white);
+  margin-bottom: 16px;
+}
+.links { display: flex; flex-direction: column; gap: 10px; }
+.links a {
+  font-size: 14px; color: rgba(255,255,255,0.6);
+  transition: color var(--duration) var(--ease);
+}
+.links a:hover { color: var(--primary); }
+
+.contact { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; }
+.contact li {
+  display: flex; align-items: flex-start; gap: 8px;
+  font-size: 13px; color: rgba(255,255,255,0.6);
+}
+.contact svg { flex-shrink: 0; margin-top: 2px; }
+
+.payments { display: flex; flex-wrap: wrap; gap: 6px; }
+.payBadge {
+  padding: 4px 10px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: var(--radius-sm);
+  font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.7);
+  letter-spacing: 0.04em;
+}
+
+.bottom {
+  border-top: 1px solid rgba(255,255,255,0.08);
+  padding: 20px 0;
+}
+.bottom > div {
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: 12px; gap: 16px; flex-wrap: wrap;
+}
+.bottomLinks { display: flex; gap: 20px; }
+.bottomLinks a {
+  color: rgba(255,255,255,0.5);
+  transition: color var(--duration) var(--ease);
+}
+.bottomLinks a:hover { color: var(--primary); }

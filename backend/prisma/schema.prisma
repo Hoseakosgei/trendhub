@@ -1,0 +1,233 @@
+// backend/prisma/schema.prisma
+// Run: npx prisma migrate dev --name init
+// Then: npx prisma generate
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ── Users ─────────────────────────────────────────────────────
+model User {
+  id           String   @id @default(uuid())
+  name         String
+  email        String   @unique
+  phone        String
+  passwordHash String
+  role         Role     @default(CUSTOMER)
+  isVerified   Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  orders       Order[]
+  reviews      Review[]
+  addresses    Address[]
+  wishlist     WishlistItem[]
+
+  @@index([email])
+}
+
+enum Role {
+  CUSTOMER
+  ADMIN
+}
+
+// ── Addresses ─────────────────────────────────────────────────
+model Address {
+  id         String  @id @default(uuid())
+  userId     String
+  label      String  @default("Home")
+  street     String
+  town       String
+  county     String
+  postalCode String?
+  isDefault  Boolean @default(false)
+  createdAt  DateTime @default(now())
+
+  user       User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+// ── Categories ────────────────────────────────────────────────
+model Category {
+  id       String  @id @default(cuid())
+  name     String  @unique
+  slug     String  @unique
+  parentId String?
+  parent   Category?  @relation("SubCategories", fields: [parentId], references: [id])
+  children Category[] @relation("SubCategories")
+  products Product[]
+}
+
+// ── Products ──────────────────────────────────────────────────
+model Product {
+  id            String   @id @default(uuid())
+  name          String
+  description   String
+  price         Float
+  originalPrice Float?
+  categoryId    String
+  stock         Int      @default(0)
+  images        String[] // Array of image URLs
+  badge         String?
+  rating        Float    @default(0)
+  reviewCount   Int      @default(0)
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  category      Category     @relation(fields: [categoryId], references: [id])
+  orderItems    OrderItem[]
+  reviews       Review[]
+  wishlistItems WishlistItem[]
+
+  @@index([categoryId])
+  @@index([isActive])
+  @@index([price])
+}
+
+// ── Orders ────────────────────────────────────────────────────
+model Order {
+  id              String      @id @default(uuid())
+  orderNumber     String      @unique
+  userId          String
+  status          OrderStatus @default(PENDING_PAYMENT)
+  paymentStatus   PaymentStatus @default(PENDING)
+  paymentMethod   String?
+  subtotal        Float
+  deliveryFee     Float       @default(0)
+  total           Float
+  shippingCounty  String
+  shippingTown    String
+  shippingStreet  String
+  trackingNumber  String?
+  notes           String?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  user            User        @relation(fields: [userId], references: [id])
+  items           OrderItem[]
+  payment         Payment?
+
+  @@index([userId])
+  @@index([status])
+  @@index([orderNumber])
+}
+
+enum OrderStatus {
+  PENDING_PAYMENT
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+  REFUNDED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
+// ── OrderItems ────────────────────────────────────────────────
+model OrderItem {
+  id           String  @id @default(uuid())
+  orderId      String
+  productId    String
+  productName  String  // Snapshot at time of purchase
+  quantity     Int
+  unitPrice    Float
+  lineTotal    Float
+
+  order        Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product      Product @relation(fields: [productId], references: [id])
+
+  @@index([orderId])
+  @@index([productId])
+}
+
+// ── Payments ──────────────────────────────────────────────────
+model Payment {
+  id                String        @id @default(uuid())
+  orderId           String        @unique
+  method            PaymentMethod
+  amount            Float
+  currency          String        @default("KES")
+  status            PaymentStatus @default(PENDING)
+  transactionRef    String?
+  mpesaReceiptNo    String?
+  stripePaymentId   String?
+  failReason        String?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  order             Order         @relation(fields: [orderId], references: [id])
+
+  @@index([orderId])
+  @@index([status])
+}
+
+enum PaymentMethod {
+  MPESA
+  STRIPE
+  PAYPAL
+}
+
+// ── Reviews ───────────────────────────────────────────────────
+model Review {
+  id         String   @id @default(uuid())
+  userId     String
+  productId  String
+  rating     Int      // 1-5
+  comment    String?
+  isVerified Boolean  @default(false) // Verified purchase
+  createdAt  DateTime @default(now())
+
+  user       User     @relation(fields: [userId], references: [id])
+  product    Product  @relation(fields: [productId], references: [id])
+
+  @@unique([userId, productId]) // One review per product per user
+  @@index([productId])
+  @@index([userId])
+}
+
+// ── Wishlist ──────────────────────────────────────────────────
+model WishlistItem {
+  id        String   @id @default(uuid())
+  userId    String
+  productId String
+  addedAt   DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id])
+
+  @@unique([userId, productId])
+  @@index([userId])
+}
+
+// ── Coupons ───────────────────────────────────────────────────
+model Coupon {
+  id           String       @id @default(uuid())
+  code         String       @unique
+  discountType DiscountType
+  value        Float        // Percentage or flat KES amount
+  minOrder     Float?       // Minimum order amount to apply
+  maxUses      Int?
+  usedCount    Int          @default(0)
+  expiresAt    DateTime?
+  isActive     Boolean      @default(true)
+  createdAt    DateTime     @default(now())
+
+  @@index([code])
+}
+
+enum DiscountType {
+  PERCENTAGE
+  FLAT
+}
