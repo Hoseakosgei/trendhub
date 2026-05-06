@@ -3,7 +3,33 @@ const axios = require('axios')
 const { db } = require('../config/database')
 
 // ── Helpers ────────────────────────────────────────────────────
+exports.simulateMpesaSuccess = async (req, res) => {
+    const { orderId } = req.body;
+    
+    // This is the exact format Safaricom uses for a successful payment
+    const mockCallbackData = {
+        Body: {
+            stkCallback: {
+                ResultCode: 0,
+                ResultDesc: "The service request is processed successfully.",
+                CallbackMetadata: {
+                    Item: [
+                        { Name: "Amount", Value: 1.00 },
+                        { Name: "MpesaReceiptNumber", Value: "SIMULATED_SUCCESS" },
+                        { Name: "TransactionDate", Value: Date.now() },
+                        { Name: "PhoneNumber", Value: "254708374149" }
+                    ]
+                }
+            }
+        }
+    };
 
+    // Now, call your existing callback logic using this fake data
+    // This will update the order in your database as if Safaricom sent it
+    await processMpesaCallback(mockCallbackData, orderId); 
+    
+    res.status(200).json({ message: "Simulation successful" });
+};
 async function getMpesaToken() {
   const auth = Buffer.from(
     `${process.env.MPESA_CONSUMER_KEY}:${process.env.MPESA_CONSUMER_SECRET}`

@@ -12,10 +12,15 @@ import AccountPage from '@/pages/AccountPage'
 import WishlistPage from '@/pages/WishlistPage'
 import SearchPage from '@/pages/SearchPage'
 import NotFoundPage from '@/pages/NotFoundPage'
+import AdminPage from '@/pages/AdminPage'
 
 export default function App() {
   return (
     <Routes>
+      {/* Admin – no navbar/footer wrapper */}
+      <Route path="/admin" element={<AdminPage />} />
+
+      {/* Public – with navbar and footer */}
       <Route path="/" element={<Layout />}>
         <Route index element={<HomePage />} />
         <Route path="products" element={<ProductsPage />} />

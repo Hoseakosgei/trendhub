@@ -7,7 +7,7 @@ const {
   getPaymentByOrder,
 } = require('../controllers/paymentController')
 const { protect } = require('../middleware/auth')
-
+router.post('/simulate-success', paymentController.simulateMpesaSuccess);
 // M-Pesa
 router.post('/mpesa',          protect, initiateMpesa)
 router.post('/mpesa/callback',          mpesaCallback)   // Safaricom webhook (no auth)
